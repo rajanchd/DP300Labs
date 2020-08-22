@@ -1,0 +1,1 @@
+@Microsoft.KeyVault(SecretUri=https://citkv.vault.azure.net/secrets/TeamsURI/2b5c87d9dbb24619b6a40a3c68c5fd62)
