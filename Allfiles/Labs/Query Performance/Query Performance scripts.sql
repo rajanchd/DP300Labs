@@ -106,7 +106,7 @@ GO
 ALTER DATABASE AdventureWorks2017 SET COMPATIBILITY_LEVEL = 150; 
 GO 
 
---Execute the query below. Note that the execution plan shows an index seek operator. 
+--Execute the query below. Note that the execution plan shows a Nonclustered Index Seek operator. 
 
 USE AdventureWorks2017 
 GO 
@@ -125,35 +125,30 @@ SELECT SalesOrderId, OrderDate
 FROM Sales.SalesOrderHeader 
 WHERE SalesPersonID=277; 
 
---Use the T-SQL DECLARE statement to declare @SalesPersonID so you can pass in a value instead of hard-code the value in the WHERE clause. You should ensure that the data type of your variable matches the data type of the column in the target table.  
 
-USE AdventureWorks2017 
+-- Create a parameterized stored procedure so that the value to be searched for can be passed as a parameter instead of a hard-coded value in the WHERE clause.  
+-- You should ensure that the data type of your parameter matches the data type of the column in the target table. Copy and execute the code below. 
+
+USE AdventureWorks2017  
 GO 
 
-DECLARE @SalesPersonID INT; 
-SELECT @SalesPersonID = 277;  
+CREATE OR ALTER PROCEDURE getSalesOrder  
+@PersonID INT 
+AS 
 SELECT SalesOrderId, OrderDate 
 FROM Sales.SalesOrderHeader 
-WHERE SalesPersonID= @SalesPersonID; 
+WHERE SalesPersonID = @PersonID;  
 GO
-
---Execute this query again changing the parameter value to 288.  If you examine the execution plan, you will note is the same as it was for the value of 277. This is because SQL Server has cached the execution plan and is reusing for the second execution of the query. Note that although the same plan is used for both queries, it is not necessarily the best plan. 
-
  
+-- Call the procedure with a parameter value of 277. Copy and execute the following code: 
 
-USE AdventureWorks2017 
-GO 
-
+EXEC getSalesOrder 277 
+GO  
  
+-- Run the procedure again with a parameter value of 288. Copy and execute the following code: 
 
-DECLARE @SalesPersonID INT; 
-SELECT @SalesPersonID = 288;  
-
-SELECT SalesOrderId, OrderDate 
-FROM Sales.SalesOrderHeader 
-WHERE SalesPersonID= @SalesPersonID; 
-GO
-
+EXEC getSalesOrder 288 
+GO  
 
 --Execute the following command to clear the plan cache for the AdventureWorks2017 database 
 
@@ -163,17 +158,50 @@ GO
 ALTER DATABASE SCOPED CONFIGURATION CLEAR PROCEDURE_CACHE; 
 GO 
 
---Now Run the Query with the Query Hint. Review the plan noting it now uses the plan with the index seek created for value 288 even though the @SalesPersonID = 277. 
+-- If you examine the execution plan, you will note it is the same as it was for the value of 277.  
+-- This is because SQL Server has cached the execution plan and is reusing it for the second execution of the procedure.  
+-- Note that although the same plan is used for both queries, it is not necessarily the best plan.
 
-USE AdventureWorks2017; 
+-- Execute the following command to clear the plan cache for the AdventureWorks2017 database 
+
+USE AdventureWorks2017  
+GO 
+ALTER DATABASE SCOPED CONFIGURATION CLEAR PROCEDURE_CACHE;  
+GO
+
+-- Run the procedure again with a parameter value of 288. Copy and execute the following code: 
+
+EXEC getSalesOrder 288 
+GO  
+
+-- You should notice the plan is now using the Nonclustered Index Seek operation.  
+-- This is because the cached plan was removed and a new plan was created based on the new initial parameter value of 288. 
+ 
+-- Now recreate the stored procedure with a Query Hint. Because of the OPTION hint, 
+-- the optimizer will create a plan based on a value of 288 and that plan will be used no matter what parameter value is passed to the procedure. 
+
+-- Execute the procedure multiple times and note that it now always uses the plan with the Nonclustered Index Seek. 
+
+-- Try calling with the procedure with parameter values we haven't seen yet, and you'll notice that no matter how many rows are returned (or no rows are returned!) 
+--  the plan will always use the Nonclustered Index Seek. 
+
+USE AdventureWorks2017  
 GO 
 
-DECLARE @SalesPersonID int 
-SELECT @SalesPersonID = 277 
+CREATE OR ALTER PROCEDURE getSalesOrder  
+@PersonID INT 
+AS 
+SELECT SalesOrderId, OrderDate  
+FROM Sales.SalesOrderHeader   
+WHERE SalesPersonID = @PersonID  
+OPTION (OPTIMIZE FOR (@PersonID = 288));  
+GO    
 
-SELECT SalesOrderId, OrderDate 
-FROM Sales.SalesOrderHeader 
-WHERE SalesPersonID= @SalesPersonID 
-OPTION (OPTIMIZE FOR (@SalesPersonID = 288)); 
+EXEC getSalesOrder 288; 
+GO  
 
- 
+EXEC getSalesOrder 277; 
+GO 
+
+EXEC getSalesOrder 200;
+GO 
