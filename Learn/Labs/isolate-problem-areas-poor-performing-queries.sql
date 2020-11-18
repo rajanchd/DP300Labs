@@ -27,11 +27,6 @@ WHERE [ModifiedDate] > '2012/01/01' AND [ProductID] = 772;
 -- Step 2
 -- ======
 
-CREATE NONCLUSTERED INDEX [IX_SalesOrderDetail_ProductID] ON [Sales].[SalesOrderDetail]
-(
-[ProductID] ASC
-)
-
 CREATE NONCLUSTERED INDEX [IX_SalesOrderDetail_ProductID]
 ON [Sales].[SalesOrderDetail] ([ProductID],[ModifiedDate])
 INCLUDE ([CarrierTrackingNumber],[OrderQty],[UnitPrice])
