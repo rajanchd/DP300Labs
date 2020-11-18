@@ -1,5 +1,5 @@
-Step 3
-======
+-- Step 3
+-- ======
 
 CREATE USER [DP300User1] WITH PASSWORD = 'Azur3Pa$$';
 GO
@@ -8,8 +8,8 @@ CREATE USER [DP300User2] WITH PASSWORD = 'Azur3Pa$$';
 GO
 
 
-Step 4
-======
+-- Step 4
+-- ======
 
 CREATE ROLE [SalesReader];
 GO
@@ -20,8 +20,8 @@ GO
 ALTER ROLE [SalesReader] ADD MEMBER [DP300User2];
 GO
 
-Step 5
-======
+-- Step 5
+-- ======
 
 CREATE OR ALTER PROCEDURE SalesLT.DemoProc
 AS
@@ -34,15 +34,15 @@ ORDER BY TotalSales DESC
 GO
 
 
-Step 6
-======
+-- Step 6
+-- ======
 
 EXECUTE AS USER = 'DP300User1'
 EXECUTE SalesLT.DemoProc
 
 
-Step 7
-======
+-- Step 7
+-- ======
 
 REVERT;
 GRANT EXECUTE ON SCHEMA::SalesLT TO [SalesReader];
