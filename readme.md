@@ -1,6 +1,8 @@
 # DP-300: Administering Relational Databases on Microsoft Azure
 
-This repository contains the instructions, script files and images for the lab exercises for the Instruction Led Training for Microsoft DP-300. 
+This repository has been decommissioned and is not in use.
+
+To access lab exercises and instructions for Microsoft DP-300 learning content, see [DP-300: Administering Microsoft Azure SQL Solutions](https://github.com/MicrosoftLearning/dp-300-database-administrator). 
 
 There are seven labs.
 
